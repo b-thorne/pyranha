@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
+from pylab import cm
 import numpy as np
 
 def plot_fisher_1d(fisher_mats, labels, xcen=0, ycen=1, xmin=-2.1, xmax=2.1,
@@ -65,10 +66,52 @@ def plot_fisher_1d(fisher_mats, labels, xcen=0, ycen=1, xmin=-2.1, xmax=2.1,
     ax3.set_xticks([0.9, 0.95, 1., 1.05, 1.1])
     ax2.set_yticks([0.9, 0.95, 1., 1.05, 1.1])
     ax2.set_xticks([-2, -1, 0., 1, 2])
-    #max_ticks = 5
-    #yloc = plt.MaxNLocator(max_ticks)
-    #xloc = plt.MaxNLocator(max_ticks)
-    #ax2.yaxis.set_major_locator(yloc)
-    #ax2.xaxis.set_major_locator(xloc)
-    #ax3.xaxis.set_major_locator(yloc)
     return fig
+
+def plot_fisher_list(arr_x, arr_fisher_mats, labels, xlabel=None, opath=None):
+    fig, ax = plt.subplots(1, 1, figsize=(5, 3))
+    sigma = []
+    for fisher_mats, label in zip(arr_fisher_mats, labels):
+        sigma = []
+        for fisher_mat in fisher_mats:
+            sigma.append(calculate_sigma_00(fisher_mat))
+        ax.loglog(arr_x, sigma, label=label)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(r"$\sigma_r$")
+    ax.legend(loc="upper left", bbox_to_anchor=(1., 1.))
+    if opath is not None:
+        fig.savefig(opath, bbox_inches='tight')
+    return 
+
+def plot_fisher_2d(arr_x, arr_y, fisher_mats_2d, xlabel=None, ylabel=None, opath=None):
+    fig, ax = plt.subplots(1, 1, figsize=(3.5, 3.5))
+    X, Y = np.meshgrid(arr_x, arr_y)
+    Z = calculate_sigma_2d(fisher_mats_2d)
+    im = plt.imshow(Z, cmap=cm.RdBu, interpolation='bilinear',
+                    extent=[arr_x[0], arr_x[-1], arr_y[0], arr_y[-1]],
+                    origin='lower', aspect='auto')
+    cset = plt.contour(X, Y, Z, colors='k')
+    plt.clabel(cset, inline=True, fmt='%1.1f', fontsize=12)
+    plt.colorbar(im, label=r'$\sigma_r$')
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    if opath is not None:
+        fig.savefig(opath, bbox_inches='tight')
+    return
+
+def calculate_sigma_2d(fisher_mat_2d):
+    shape = fisher_mat_2d.shape
+    sigma = np.zeros((shape[1], shape[0]))
+    for i, fisher_1d in enumerate(fisher_mat_2d):
+        for j, fisher in enumerate(fisher_1d):
+            sigma[j, i] = calculate_sigma_00(fisher)
+    return sigma
+
+def calculate_sigma_00(fisher_mat):
+    # Rescale the elements of the matrix x -> 10^3 x
+    fisher_mat[0, 0] *= 10**-6
+    fisher_mat[0, 1] *= 10**-3
+    fisher_mat[1, 0] *= 10**-3
+    # Compute the inverse of the matrix.
+    # Get the marginalized 1-sigma values.
+    return np.sqrt(np.linalg.inv(fisher_mat)[0, 0])

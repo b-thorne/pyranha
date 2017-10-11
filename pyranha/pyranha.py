@@ -83,8 +83,8 @@ class Pyranha(object):
         cosmo.compute()
 
         # Get the lensed and unlensed spectra as dictionaries.
-        cls_l = cosmo.lensed_cl(self.lmax)
-        cls_u = cosmo.raw_cl(self.lmax)
+        cls_l = cosmo.lensed_cl(2500)
+        cls_u = cosmo.raw_cl(2500)
 
         # Do the memory cleanup.
         cosmo.struct_cleanup()
@@ -104,13 +104,17 @@ class Pyranha(object):
         cls_l, cls_u = self.run_class()
 
         # Calculate the lensing template for this cosmology
-        self.BB_lens_template = calculate_lensing_template(cls_l['bb'], cls_u['bb'])[self.lmin : self.lmax + 1]
-        self.BB_lensed = cls_l['bb'][self.lmin : self.lmax + 1]
+        # Note that ALL CLASS SPECTRA ARE COMPUTE FOR ELL = 0 TO 2500. This is
+        # because we want the option to iterate over lmin, lmax without
+        # recomputing the cosmology. Therefore, the ell slices are implemented
+        # in Pyranha.fisher
+        self.BB_lens_template = calculate_lensing_template(cls_l['bb'], cls_u['bb'])
+        self.BB_lensed = cls_l['bb']
 
         # Change the tensor-to-scalar ratio to one for the calculation of the
         # primordial B-mode signal template.
         _, cls_u = self.run_class(r=1)
-        self.BB_prim_template = cls_u['bb'][self.lmin : self.lmax + 1]
+        self.BB_prim_template = cls_u['bb']
         return
 
 
@@ -139,11 +143,14 @@ class Pyranha(object):
         dCdi = np.zeros((2, 2, self.lmax - self.lmin + 1), dtype=np.float32)
         # Assemble noise spectrum from lensing spectrum and instrument spectrum
         # including foreground residuals.
-        N_ell_BB = self.delensing_factor * self.BB_lensed + self.BB_inst
+        # NOTE THAT ALL THE CLASS SPECTRA ARE CALCULATE TO ELL=2500 FIRST IN
+        # ORDER TO ALLO ITERATION OF LMIN AND LMAX WITHOUT HAVING TO
+        # RECOMPUTE THE SPECTRA EACH TIME. HENCE THE UGLY SLICING BELOW.
+        N_ell_BB = self.delensing_factor * self.BB_lensed[self.lmin : self.lmax + 1] + self.BB_inst
         #fill up the summand arrays.
-        dCdi[0, 0] = self.BB_prim_template ** 2 / N_ell_BB ** 2
-        dCdi[1, 1] = self.BB_lens_template ** 2 / N_ell_BB ** 2
-        dCdi[0, 1] = self.BB_lens_template * self.BB_prim_template / N_ell_BB ** 2
+        dCdi[0, 0] = self.BB_prim_template[self.lmin : self.lmax + 1] ** 2 / N_ell_BB ** 2
+        dCdi[1, 1] = self.BB_lens_template[self.lmin : self.lmax + 1] ** 2 / N_ell_BB ** 2
+        dCdi[0, 1] = self.BB_lens_template[self.lmin : self.lmax + 1] * self.BB_prim_template[self.lmin : self.lmax + 1] / N_ell_BB ** 2
         dCdi[1, 0] = dCdi[0, 1]
 
         summand =  (2. * self.ell + 1.) / 2. * self.fsky * dCdi
@@ -151,7 +158,7 @@ class Pyranha(object):
         return fish
 
 
-    def iterate_instrument_parameter_1d(self, **kwargs):
+    def iterate_instrument_parameter_1d(self, par_name, par_values):
         """Method to iterate over an istrument parameter, holding all the
         cosmological parameter constant. Therefore, we do not need to rerun
         CLASS.
@@ -160,44 +167,30 @@ class Pyranha(object):
         self.compute_cosmology()
         # Intialize list for output.
         fisher = []
-        # Iteratte over the key-value pairs in the kwargs. This is only
-        # designed to accept one item in the dictionary.
-        for key, values in kwargs.iteritems():
-            # Cycle through the list of values for this parameter.
-            for value in values:
-                # Set the parmaeter value and compute the corresponding
-                # instrument noise spectrum.
-                setattr(self, key, value)
-                self.compute_instrument()
-                fisher.append(self.fisher())
+        for par_value in par_values:
+            # Set the parmaeter value and compute the corresponding
+            # instrument noise spectrum.
+            setattr(self, par_name, par_value)
+            self.compute_instrument()
+            fisher.append(self.fisher())
         return fisher
 
-    def iterate_instrument_parameter_2d(self, **kwargs):
+    def iterate_instrument_parameter_2d(self,
+                                        par_name_x, par_name_y,
+                                        arr_x, arr_y):
         """Method to iterate over an istrument parameter, holding all the
         cosmological parameter constant. Therefore, we do not need to rerun
         CLASS.
         """
         # Compute the cosmology, which remains constant across iterations.
         self.compute_cosmology()
-        # Intialize list for output.
-        fisher = []
         # Iteratte over the key-value pairs in the kwargs. This is only
         # designed to accept one item in the dictionary.
-        for key_x in kwargs:
-            xs = kwargs.pop(key_x)
-            print xs
-            for key_y in kwargs:
-                ys = kwargs.pop(key_y)
-                print ys
-                fisher = np.zeros((len(xs), len(ys), 2, 2))
-                for i, x in enumerate(xs):
-                    for j, y in enumerate(ys):
-                        print key_x, x
-                        print key_y, y
-                        setattr(self, key_x, x)
-                        print "self.key_x", getattr(self, key_x)
-                        setattr(self, key_y, y)
-                        print "self.key_y", getattr(self, key_y)
-                        self.compute_instrument()
-                        fisher[i, j, ...] = self.fisher()
+        fisher = np.zeros((len(arr_x), len(arr_y), 2, 2))
+        for i, x in enumerate(arr_x):
+            for j, y in enumerate(arr_y):
+                setattr(self, par_name_x, x)
+                setattr(self, par_name_y, y)
+                self.compute_instrument()
+                fisher[i, j, ...] = self.fisher()
         return fisher
