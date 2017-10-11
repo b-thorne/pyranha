@@ -3,9 +3,9 @@ from matplotlib.patches import Ellipse
 from pylab import cm
 import numpy as np
 
-def plot_fisher_1d(fisher_mats, labels, xcen=0, ycen=1, xmin=-2.1, xmax=2.1,
-                    ymin=0.88, ymax=1.12,
-                title=""):
+
+def plot_fisher_corner(fisher_mats, labels, xcen=0, ycen=1, xmin=-2.1, xmax=2.1,
+                    ymin=0.88, ymax=1.12, title="", opath=None):
     """Function to plot 2x2 Fisher matrices.
     """
     # Set up the figure environment.
@@ -66,22 +66,24 @@ def plot_fisher_1d(fisher_mats, labels, xcen=0, ycen=1, xmin=-2.1, xmax=2.1,
     ax3.set_xticks([0.9, 0.95, 1., 1.05, 1.1])
     ax2.set_yticks([0.9, 0.95, 1., 1.05, 1.1])
     ax2.set_xticks([-2, -1, 0., 1, 2])
-    return fig
+    if opath is not None:
+        fig.savefig(opath, bbox_inches='tight')
+    return
 
-def plot_fisher_list(arr_x, arr_fisher_mats, labels, xlabel=None, opath=None):
+
+def plot_fisher_1d(arr_x, arr_fisher_mats, labels, xlabel=None, opath=None):
     fig, ax = plt.subplots(1, 1, figsize=(5, 3))
     sigma = []
     for fisher_mats, label in zip(arr_fisher_mats, labels):
-        sigma = []
-        for fisher_mat in fisher_mats:
-            sigma.append(calculate_sigma_00(fisher_mat))
-        ax.loglog(arr_x, sigma, label=label)
+        sigmas = map(calculate_sigma_00, fisher_mats)
+        ax.loglog(arr_x, sigmas, label=label)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(r"$\sigma_r$")
     ax.legend(loc="upper left", bbox_to_anchor=(1., 1.))
     if opath is not None:
         fig.savefig(opath, bbox_inches='tight')
-    return 
+    return
+
 
 def plot_fisher_2d(arr_x, arr_y, fisher_mats_2d, xlabel=None, ylabel=None, opath=None):
     fig, ax = plt.subplots(1, 1, figsize=(3.5, 3.5))
@@ -99,6 +101,7 @@ def plot_fisher_2d(arr_x, arr_y, fisher_mats_2d, xlabel=None, ylabel=None, opath
         fig.savefig(opath, bbox_inches='tight')
     return
 
+
 def calculate_sigma_2d(fisher_mat_2d):
     shape = fisher_mat_2d.shape
     sigma = np.zeros((shape[1], shape[0]))
@@ -106,6 +109,7 @@ def calculate_sigma_2d(fisher_mat_2d):
         for j, fisher in enumerate(fisher_1d):
             sigma[j, i] = calculate_sigma_00(fisher)
     return sigma
+
 
 def calculate_sigma_00(fisher_mat):
     # Rescale the elements of the matrix x -> 10^3 x

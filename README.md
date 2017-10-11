@@ -9,9 +9,3 @@ An example configuration file, with all the current options labelled and explain
 ## Example
 
 An example of how to run the code, and the various facilities it provides, can be found in the [IPython notebook](example.ipynb) in this directory.
-
-## Processing
-
-- We will want to iterate through the parameters and calculate the derivative matrix for each parameter.
-- Will need to assemble the Fisher matrix and invert it.
--
