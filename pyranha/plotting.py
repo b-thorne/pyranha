@@ -16,8 +16,9 @@ def plot_fisher_1d(fisher_mats, labels, xcen=0, ycen=1, xmin=-2.1, xmax=2.1,
     # Set limits:
     xarr = np.linspace(xmin, xmax, 1000)
     yarr = np.linspace(ymin, ymax, 1000)
-    # Rescale the elements of the matrix x -> 10^3 x
+    # Loope over the matrices to add them to the plot.
     for fisher_mat, label in zip(fisher_mats, labels):
+        # Rescale the elements of the matrix x -> 10^3 x
         fisher_mat[0, 0] *= 10**-6
         fisher_mat[0, 1] *= 10**-3
         fisher_mat[1, 0] *= 10**-3

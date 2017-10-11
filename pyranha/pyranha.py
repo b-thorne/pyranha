@@ -149,3 +149,55 @@ class Pyranha(object):
         summand =  (2. * self.ell + 1.) / 2. * self.fsky * dCdi
         fish = np.sum(summand[..., self.lmin : self.lmax + 1], axis=2)
         return fish
+
+
+    def iterate_instrument_parameter_1d(self, **kwargs):
+        """Method to iterate over an istrument parameter, holding all the
+        cosmological parameter constant. Therefore, we do not need to rerun
+        CLASS.
+        """
+        # Compute the cosmology, which remains constant across iterations.
+        self.compute_cosmology()
+        # Intialize list for output.
+        fisher = []
+        # Iteratte over the key-value pairs in the kwargs. This is only
+        # designed to accept one item in the dictionary.
+        for key, values in kwargs.iteritems():
+            # Cycle through the list of values for this parameter.
+            for value in values:
+                # Set the parmaeter value and compute the corresponding
+                # instrument noise spectrum.
+                setattr(self, key, value)
+                self.compute_instrument()
+                fisher.append(self.fisher())
+        return fisher
+
+    def iterate_instrument_parameter_2d(self, **kwargs):
+        """Method to iterate over an istrument parameter, holding all the
+        cosmological parameter constant. Therefore, we do not need to rerun
+        CLASS.
+        """
+        # Compute the cosmology, which remains constant across iterations.
+        self.compute_cosmology()
+        # Intialize list for output.
+        fisher = []
+        # Iteratte over the key-value pairs in the kwargs. This is only
+        # designed to accept one item in the dictionary.
+        for key_x in kwargs:
+            xs = kwargs.pop(key_x)
+            print xs
+            for key_y in kwargs:
+                ys = kwargs.pop(key_y)
+                print ys
+                fisher = np.zeros((len(xs), len(ys), 2, 2))
+                for i, x in enumerate(xs):
+                    for j, y in enumerate(ys):
+                        print key_x, x
+                        print key_y, y
+                        setattr(self, key_x, x)
+                        print "self.key_x", getattr(self, key_x)
+                        setattr(self, key_y, y)
+                        print "self.key_y", getattr(self, key_y)
+                        self.compute_instrument()
+                        fisher[i, j, ...] = self.fisher()
+        return fisher
