@@ -20,6 +20,12 @@ import os
 import sys
 sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)), '../..'))
 
+#Add some mocks to handle read the docs
+import mock
+
+MOCK_MODULES = ['numpy', 'scipy', 'matplotlib', 'matplotlib.pyplot', 'Class']
+for mod_name in MOCK_MODULES:
+sys.modules[mod_name] = mock.Mock()
 
 # -- General configuration ------------------------------------------------
 
