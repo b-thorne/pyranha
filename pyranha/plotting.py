@@ -78,14 +78,15 @@ def plot_fisher_1d(arr_x, arr_fisher_mats, labels, xlabel=None, opath=None):
         sigmas = map(calculate_sigma_00, fisher_mats)
         ax.loglog(arr_x, sigmas, label=label)
     ax.set_xlabel(xlabel)
-    ax.set_ylabel(r"$\sigma_r$")
+    ax.set_ylabel(r"$10^{-3]} \sigma_r$")
     ax.legend(loc="upper left", bbox_to_anchor=(1., 1.))
     if opath is not None:
         fig.savefig(opath, bbox_inches='tight')
     return
 
 
-def plot_fisher_2d(arr_x, arr_y, fisher_mats_2d, xlabel=None, ylabel=None, opath=None):
+def plot_fisher_2d(arr_x, arr_y, fisher_mats_2d, xlabel=None, ylabel=None,
+                    opath=None):
     fig, ax = plt.subplots(1, 1, figsize=(3.5, 3.5))
     X, Y = np.meshgrid(arr_x, arr_y)
     Z = calculate_sigma_2d(fisher_mats_2d)
@@ -94,7 +95,7 @@ def plot_fisher_2d(arr_x, arr_y, fisher_mats_2d, xlabel=None, ylabel=None, opath
                     origin='lower', aspect='auto')
     cset = plt.contour(X, Y, Z, colors='k')
     plt.clabel(cset, inline=True, fmt='%1.1f', fontsize=12)
-    plt.colorbar(im, label=r'$\sigma_r$')
+    plt.colorbar(im, label=r'$10^{-3} \sigma_r$')
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     if opath is not None:
