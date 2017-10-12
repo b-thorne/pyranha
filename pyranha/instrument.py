@@ -1,5 +1,12 @@
+"""
+.. module:: instrument
+   :platform: Unix
+   :synopsis: functions describing behaviour of instrument spectra.
+.. moduleauthor: Ben Thorne <ben.thorne@physics.ox.ac.uk>
+"""
+
 import numpy as np
-from foreground import *
+from .foreground import fg_res_sys, dust_cl, synch_cl
 
 def N_ell(ell, beam, sens):
     """Gaussian white-noise spectrum for a given beam and sensitivity.

@@ -1,3 +1,9 @@
+"""
+.. module: plotting
+   :platform: Unix
+   :synopsis: Functions to plot various outputs of the  `Pyranha` methods.
+.. moduleauthor: Ben Thorne <ben.thorne@physics.ox.ac.uk>
+"""
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 from pylab import cm

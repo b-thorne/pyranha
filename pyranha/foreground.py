@@ -1,5 +1,11 @@
+"""
+.. module:: foreground
+   :platform: Unix
+   :synopsis: functions describing behaviour of foreground spectra.
+.. moduleauthor: Ben Thorne <ben.thorne@physics.ox.ac.uk>
+"""
+
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def BB_scaling(nu, nu_0, T):

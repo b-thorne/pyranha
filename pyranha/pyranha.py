@@ -1,5 +1,12 @@
+"""
+.. module:: pyranha
+   :platform: Unix
+   :synopsis: Main module containiny `Pyranha` class responsible for configuring and carrying out Fisher matrix calculations.
+.. moduleauthor: Ben Thorne <ben.thorne@physics.ox.ac.uk>
+"""
+
 import numpy as np
-from instrument import instrument
+from .instrument import instrument
 from classy import Class
 import ConfigParser
 
