@@ -7,6 +7,9 @@ import numpy as np
 def plot_fisher_corner(fisher_mats, labels, xcen=0, ycen=1, xmin=-2.1, xmax=2.1,
                     ymin=0.88, ymax=1.12, title="", opath=None):
     """Function to plot 2x2 Fisher matrices.
+
+    :param fisher_mats: List of fisher matrices to be plotted.
+
     """
     # Set up the figure environment.
     fig = plt.figure(figsize=(6, 6))
@@ -104,6 +107,20 @@ def plot_fisher_2d(arr_x, arr_y, fisher_mats_2d, xlabel=None, ylabel=None,
 
 
 def calculate_sigma_2d(fisher_mat_2d):
+    """Function to take a set of 2x2 fisher matrices evaluated on a 2d set of
+    points and compute the corresponding constraint on the (0, 0) element.
+
+    Parameters
+    ----------
+    fisher_mat_2d: array_like
+        Can be of any shape (Nx, Ny, 2, 2) as long as the last two
+        dimensions are of shape (2, 2).
+    Returns
+    -------
+    array_like
+        Array of sigma values of same shape as the first two axes of
+        fisher_mat_2d.
+    """
     shape = fisher_mat_2d.shape
     sigma = np.zeros((shape[1], shape[0]))
     for i, fisher_1d in enumerate(fisher_mat_2d):
@@ -113,7 +130,21 @@ def calculate_sigma_2d(fisher_mat_2d):
 
 
 def calculate_sigma_00(fisher_mat):
-    # Rescale the elements of the matrix x -> 10^3 x
+    """Function to rescale (0, 0) parameter of input fisher matrix by
+    10^3, and calculate the one-sigma constraint on the (0, 0) parameter.
+
+    Parameters
+    ----------
+    fisher_mat: array_like
+        A fisher matrix of shape (2, 2).
+
+    Returns
+    -------
+    float
+        The square root of the (0, 0) element of the inverse of the input
+        matrix.
+    """
+    # Rescale the elements of the matrix x  -> 10^3 x
     fisher_mat[0, 0] *= 10**-6
     fisher_mat[0, 1] *= 10**-3
     fisher_mat[1, 0] *= 10**-3
