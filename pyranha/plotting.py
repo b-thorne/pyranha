@@ -96,7 +96,7 @@ def plot_fisher_1d(arr_x, arr_fisher_mats, labels, xlabel=None, opath=None):
 
 def plot_fisher_2d(arr_x, arr_y, fisher_mats_2d, xlabel=None, ylabel=None,
                     opath=None):
-    fig, ax = plt.subplots(1, 1, figsize=(3.5, 3.5))
+    fig, ax = plt.subplots(1, 1, figsize=(3, 3))
     X, Y = np.meshgrid(arr_x, arr_y)
     Z = calculate_sigma_2d(fisher_mats_2d)
     im = plt.imshow(Z, cmap=cm.RdBu, interpolation='bilinear',

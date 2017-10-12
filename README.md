@@ -1,6 +1,6 @@
 # Fisher forecasts for B-modes and foreground removal
 
-`pyranha` is an extremely simple Fisher code for forecasting constraints on the tensor-to-scalar ratio under incomplete foreground removal. The model for adding foreground residuals is described in [](Thorne et al 2017), which is itself based on ![]().
+`pyranha` is an extremely simple Fisher code for forecasting constraints on the tensor-to-scalar ratio under incomplete foreground removal.
 
 ## Configuration files
 
